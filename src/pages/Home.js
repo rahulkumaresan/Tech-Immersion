@@ -9,6 +9,8 @@ const Home=()=> {
 const navigate = useNavigate();
 
 const [ showPassword, setShowPassword ] = useState(false);
+const [password, setPassword] = useState("");
+const [username, setUsername] = useState("");
 
   function gotoLocatePage(){
     ValidateUser();
@@ -28,6 +30,7 @@ myHeaders.append("Content-Type", "application/json");
 const raw = JSON.stringify({
   "Username": userName,
   "Password": password
+
 });
 
 const requestOptions = {
@@ -62,16 +65,16 @@ fetch("http://localhost:7071/api/validateUser", requestOptions)
             <h2>Hospital Locator</h2>
             <p>Login</p>
             <form>
-              <input type="email" placeholder="Email" />
+              <input type="email" placeholder="Username" onChange={(e)=>setUsername(e.target.value)}  />
               <div className="pass-input-div">
-                <input type={showPassword ? "text" : "password"} placeholder="Password" />
+                <input type={showPassword ? "text" : "password"} placeholder="Password" onChange={(e)=>setPassword(e.target.value)} />
                 {showPassword ? <FaEyeSlash onClick={() => {setShowPassword(!showPassword)}} /> : <FaEye onClick={() => {setShowPassword(!showPassword)}} />}
                 
               </div>
 
               
               <div className="login-signup-center-buttons">
-                <button onClick={gotoLocatePage} type="button">Log In</button>
+                
                 <button onClick={gotoCrudPage} type="button">Admin Log In</button>
               </div>
             </form>

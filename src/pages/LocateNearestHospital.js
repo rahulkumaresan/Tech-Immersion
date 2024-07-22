@@ -1,9 +1,18 @@
 import { React, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Autocomplete, TextField, Button, FormControl, Select, MenuItem, InputLabel } from "@mui/material";
-//import axios from "axios";
-//import {Input, Card} from "antd";
-//import { AutoComplete } from 'primereact/autocomplete';
+import {
+  Autocomplete,
+  TextField,
+  Button,
+  FormControl,
+  FormControlLabel,
+  Radio,
+  FormLabel,
+  RadioGroup,
+  Select,
+  MenuItem,
+  InputLabel,
+} from "@mui/material";
 
 const LocateNearestHospital = () => {
   const [hospitalData, setHospitalData] = useState();
@@ -16,16 +25,18 @@ const LocateNearestHospital = () => {
   const [dept, setDept] = useState("");
   const [nearestHospital, setNearestHospital] = useState("");
   const [distanceHospital, setDistanceHospital] = useState("");
+  const [currentLocationAvbl, setCurrentLocationAvbl] = useState(false);
   const [address, setAddress] = useState("");
   const [newAdresslatlon, setNewAddresslatlon] = useState([]);
   const [searchList, setSearchList] = useState([]);
   const [textToSearch, setTextToSearch] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
+  const [locationOption, setLocationOption] = useState("currentLocation");
   getHospitalDatafromDB();
 
   //using the ‘Haversine’ formula.
-  console.log("locateNearestHospital is called");
-  const arr = [
+
+  /*const arr = [
     ["AIIMS Delhi", 28.5672, 77.21, "ortho,dental,gp,opthalmology,cardio"],
     ["Apollo Hyd", 17.4276, 78.4134, "ortho,dental,gp,cardio"],
     ["Medicover Madhapur", 17.4469, 78.38, "gp"],
@@ -50,7 +61,7 @@ const LocateNearestHospital = () => {
       85.775,
       "ortho,dental,gp,opthalmology,cardio",
     ],
-  ];
+  ];*/
 
   function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     var R = 6371; // Radius of the earth in km
@@ -92,7 +103,7 @@ const LocateNearestHospital = () => {
       redirect: "follow",
     };
     // Replace this URL with the URL of your API and adjust query parameter if needed
-    return  fetch(
+    return fetch(
       `https://geocode.maps.co/search?q=${textToSearch}&api_key=668f77953c443921364690nrf6d0eb9`,
       requestOptions
     )
@@ -102,33 +113,28 @@ const LocateNearestHospital = () => {
         console.log(result, "result");
       })
       .catch((error) => console.error(error));
-}
+  }
 
-function debounce(func, wait) {
-  let timeout;
-  return function(...args) {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func.apply(this, args), wait);
-  };
-}
+  function debounce(func, wait) {
+    let timeout;
+    return function (...args) {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
 
-const debouncedFetchSearchResults = debounce(async()=>{
-  const result = await fetchSuggestions();
-  console.log(result,"result");
-  //displaySuggestions(result)
-  return result;
+  const debouncedFetchSearchResults = debounce(async () => {
+    const result = await fetchSuggestions();
+    console.log(result, "result");
+    //displaySuggestions(result)
+    return result;
   }, 1000);
 
   useEffect(() => {
-    
     debouncedFetchSearchResults();
-
-    
-    //const response = await axios.get(`https://geocode.maps.co/search?q=${textToSearch}&api_key=668f77953c443921364690nrf6d0eb9`);
-    //setSearchList(response.data);
   }, [textToSearch]);
 
-  const updateDynamicLatLon = (value) => {
+  /*const updateDynamicLatLon = (value) => {
     console.log(value, "value");
     let lat = value.lat,
       lon = value.lon;
@@ -137,18 +143,14 @@ const debouncedFetchSearchResults = debounce(async()=>{
     setTextToSearch(value.display_name);
     setNewAddresslatlon(arr);
     setSearchList([]);
-  };
-  console.log(searchList,"SearchList");
+  };*/
 
-  const FindAddress = (latitude, longitude) => {
-    console.log(latitude, "latitude", longitude);
-
-    //update this to dynamic
+  function FindAddress(latitude, longitude) {
     fetch(
       `https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}&api_key=668f77953c443921364690nrf6d0eb9`
     )
       .then((res) => {
-        console.log(res, "res");
+        console.log(res, "dynamicAddress");
         return res.json();
       })
       .then((data) => {
@@ -156,7 +158,7 @@ const debouncedFetchSearchResults = debounce(async()=>{
         setAddress(data);
         console.log("data from address", address);
       });
-  };
+  }
 
   function succeeded(position) {
     console.log("Location fetch succeeded");
@@ -189,28 +191,26 @@ const debouncedFetchSearchResults = debounce(async()=>{
         longNearestHospital = arr[i]["Longitude"];
       }
     }
-    console.log("Nearest Hospital: ", nearestHospital);
     setNearestHospital(nearestHospital);
     FindAddress(latNearestHospital, longNearestHospital);
+    setCurrentLocationAvbl(true);
 
     setDistanceHospital(minDist);
+    alert("Location fetch Suceeded");
   }
 
-  function calculateDistance(value){
-    var currLatitude ;
-    var currLongitude ;
-    console.log(searchList,"value from CalDis",value.target.value);
-    for(let i=0;i<searchList.length;i++){
-      if(searchList[i].display_name==value.target.value){
-          currLatitude=searchList[i].lat;
-          currLongitude=searchList[i].lon;
-          console.log(searchList[i],"Found",currLatitude);
-        break;
+  function distanceFromSpecifiedLocation(value, listOfPlaces) {
+    getHospitalDatafromDB();
+    var Latitude;
+    var Longitude;
+
+    for (let i = 0; i < listOfPlaces.length; i++) {
+      if (value.target.value == listOfPlaces[i].display_name) {
+        Latitude = listOfPlaces[i].lat;
+        Longitude = listOfPlaces[i].lon;
       }
     }
 
-    
-    console.log(currLatitude, currLongitude);
     let minDist = 0;
     let nearestHospital = "";
     let arr = "";
@@ -219,14 +219,12 @@ const debouncedFetchSearchResults = debounce(async()=>{
       longNearestHospital = 0;
 
     for (let i = 0; i < arr?.length; i++) {
-      console.log("arr", arr[i].SpecialitiesAvailable);
       let dist = getDistanceFromLatLonInKm(
-        currLatitude,
-        currLongitude,
+        Latitude,
+        Longitude,
         arr[i]["Latitude"],
         arr[i]["Longitude"]
       );
-      console.log(minDist, "dist", dist);
       if (
         (minDist === 0 || dist < minDist) &&
         arr[i].SpecialitiesAvailable.includes(dept)
@@ -237,7 +235,6 @@ const debouncedFetchSearchResults = debounce(async()=>{
         longNearestHospital = arr[i]["Longitude"];
       }
     }
-    console.log(latNearestHospital,"Nearest Hospital: ", nearestHospital);
     setNearestHospital(nearestHospital);
     FindAddress(latNearestHospital, longNearestHospital);
 
@@ -245,26 +242,19 @@ const debouncedFetchSearchResults = debounce(async()=>{
   }
 
   function failed() {
-    console.log("Location fetch failed");
+    alert("Location fetch failed");
   }
   function findLocation() {
     console.log("tester called");
-    //FindDistance();
-
     const result = navigator.geolocation.getCurrentPosition(succeeded, failed);
     console.log(result);
   }
-  const setSearchedPlace = (e) => {
-    console.log("setSearchedPlace");
-  };
-
-  const updatePlace = (e) => {
-    console.log("setSearchedPlace");
-  };
-
   const handleDept = (event) => {
-    console.log(event.target.value);
     setDept(event.target.value);
+  };
+  const handleLocation = (event) => {
+    setLocationOption(event.target.defaultValue);
+    console.log("radio",event.target.defaultValue);
   };
 
   const findHospital = () => {
@@ -272,61 +262,114 @@ const debouncedFetchSearchResults = debounce(async()=>{
   };
 
   return (
-
-<div className="container">
-<div className="top-right-buttons">
+    <div className="container">
+      <div className="top-right-buttons">
         <Button onClick={() => navigate("/createAcc")} className="button">
           Create Admin Account
         </Button>
         <Button onClick={() => navigate("/")} className="button">
           Admin Login
         </Button>
-  </div>
-<div className="card">
-  <h2>Locate Nearest Hospital</h2>
+      </div>
+      <div className="card">
+        <h2>Locate Nearest Hospital</h2>
 
-  <Button onClick={findLocation} className="button">
-    Locate Me
-  </Button>
+        <FormControl variant="outlined" className="form-control">
+          <InputLabel>Select Department</InputLabel>
+          <Select
+            className="select"
+            value={dept}
+            onChange={handleDept}
+            label="Select Department"
+          >
+            <MenuItem value="ortho">Orthopaedics</MenuItem>
+            <MenuItem value="cardio">Cardiology</MenuItem>
+            <MenuItem value="gp">Others</MenuItem>
+            <MenuItem value="dental">Dental</MenuItem>
+            <MenuItem value="opthalmology">Opthalmology</MenuItem>
+          </Select>
+        </FormControl>
 
-  <FormControl variant="outlined" className="form-control">
-    <InputLabel>Select Department</InputLabel>
-    <Select className="select" value={dept} onChange={handleDept} label="Select Department">
-      <MenuItem value="ortho">Orthopaedics</MenuItem>
-      <MenuItem value="cardio">Cardiology</MenuItem>
-      <MenuItem value="gp">Others</MenuItem>
-      <MenuItem value="dental">Dental</MenuItem>
-      <MenuItem value="opthalmology">Opthalmology</MenuItem>
-    </Select>
-  </FormControl>
+        <FormControl>
+          <FormLabel id="demo-radio-buttons-group-label">
+            Search hospital near:
+          </FormLabel>
+          <RadioGroup
+            aria-labelledby="demo-radio-buttons-group-label"
+            defaultValue="currentLocation"
+            name="radio-buttons-group"
+            onChange={handleLocation}
+          >
+            <FormControlLabel
+              value="currentLocation"
+              //onClick={setLocationOption("currentLocation")}
+              control={<Radio />}
+              label="My Current Location"
+            />
+            <FormControlLabel
+              value="enteredLocation"
+              //onClick={setLocationOption("enteredLocation")}
+              control={<Radio />}
+              label="Entered Location"
+            />
+          </RadioGroup>
+        </FormControl>
 
-  <Button onClick={findHospital} className="button">
-    Find Nearest Hospital
-  </Button>
+        <Button
+        disabled={locationOption != "currentLocation"}
+          onClick={findHospital}
+          className="button"
+          
+        >
+          {!currentLocationAvbl
+            ? "Find my location"
+            : "Find Nearest Hospital from my location"}
+        </Button>
 
-  {nearestHospital && (
-    <div>
-      <p>
-        The nearest Hospital is {nearestHospital} at a distance of {distanceHospital}. Hospital Address:{" "}
-        {address.address.commercial}, {address.address.road}, {address.address.state}, {address.address.postcode}.
-      </p>
+        {nearestHospital && (
+          <div>
+            <p>
+              The nearest Hospital is<b> {nearestHospital},</b>{" "}
+              {distanceHospital} KM away. Hospital Address:{" "}
+              {address?.address?.neighbourhood}, {address?.address?.postcode}.
+            </p>
+          </div>
+        )}
+
+        <Autocomplete
+          className="autocomplete"
+          disablePortal
+          disabled={locationOption === "currentLocation"}
+          id="combo-box-demo"
+          options={searchList.map((item) => item.display_name)}
+          sx={{ width: 300 }}
+          
+          renderInput={(params) => (
+            <TextField
+              onChange={(e) => setTextToSearch(e.target.value)}
+              {...params}
+              label="Enter Address"
+            />
+          )}
+          onBlur={(e) => {
+            let listOfPlaces = searchList;
+            distanceFromSpecifiedLocation(e, listOfPlaces);
+          }}
+        />
+
+        <Button
+          className="button"
+          sx={{
+            cursor: textToSearch
+              ? "allowed!important"
+              : "not-allowed!important",
+            height: "30px",
+          }}
+        >
+          Find Nearest Hospital from Entered Location
+        </Button>
+      </div>
     </div>
-  )}
-
-  <Autocomplete
-  className="autocomplete"
-    disablePortal
-    id="combo-box-demo"
-    options={searchList.map((item) => item.display_name)}
-    sx={{ width: 300 }}
-    renderInput={(params) => <TextField onChange={(e) => setTextToSearch(e.target.value)} {...params} label="Enter Address" />}
-    onBlur={(e) => {
-      calculateDistance(e);
-    }}
-  />
-
-</div>
-</div>
   );
 };
 

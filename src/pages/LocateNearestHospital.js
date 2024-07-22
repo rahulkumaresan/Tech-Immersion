@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 
 const LocateNearestHospital = () => {
+  console.log("asdasd");
   const [hospitalData, setHospitalData] = useState();
 
   const navigate = useNavigate();
@@ -32,7 +33,8 @@ const LocateNearestHospital = () => {
   const [textToSearch, setTextToSearch] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
   const [locationOption, setLocationOption] = useState("currentLocation");
-  getHospitalDatafromDB();
+  const [formAddress,setFormAddress] = useState({"display_name":""});
+  // getHospitalDatafromDB();
 
   //using the ‘Haversine’ formula.
 
@@ -97,42 +99,112 @@ const LocateNearestHospital = () => {
       .catch((error) => console.error(error));
   }
 
-  function fetchSuggestions() {
+  function useDebounce(value, delay) {
+    // State and setters for debounced value
+    const [debouncedValue, setDebouncedValue] = useState(value);
+
+    useEffect(
+      () => {
+        // Update debounced value after delay
+        const handler = setTimeout(() => {
+          setDebouncedValue(value);
+        }, delay);
+
+        // Cancel the timeout if value changes (also on delay change or unmount)
+        // This is how we prevent debounced value from updating if value is changed ...
+        // .. within the delay period. Timeout gets cleared and restarted.
+        return () => {
+          clearTimeout(handler);
+        };
+      },
+      [value, delay] // Only re-call effect if value or delay changes
+    );
+
+    return debouncedValue;
+  }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchSuggestions();
+    }, 1000);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [textToSearch]);
+
+  async function fetchSuggestions() {
     const requestOptions = {
       method: "GET",
       redirect: "follow",
     };
     // Replace this URL with the URL of your API and adjust query parameter if needed
-    return fetch(
-      `https://geocode.maps.co/search?q=${textToSearch}&api_key=668f77953c443921364690nrf6d0eb9`,
-      requestOptions
-    )
-      .then((response) => response.text())
-      .then((result) => {
-        setSearchList(JSON.parse(result ?? []));
-        console.log(result, "result");
-      })
-      .catch((error) => console.error(error));
+    try {
+      let res = await fetch(
+        `https://geocode.maps.co/search?q=${textToSearch}&api_key=668f77953c443921364690nrf6d0eb9`,
+        requestOptions
+      );
+      res = await res.text();
+      //setSuggestions(JSON.parse(res ?? [])); // Assuming res is always JSON
+      setSearchList(JSON.parse(res ?? []));
+      console.log(res, "result");
+    } catch (e) {
+      console.log(e);
+    }
   }
 
-  function debounce(func, wait) {
+  // const useFetchSuggestions = (search) => {
+  //   const [suggestions, setSuggestions] = useState([]);
+  //   const [loading, setLoading] = useState(false);
+  //   const [error, setError] = useState(null);
+
+  //   useEffect(() => {
+  //     const fetchSuggestions = async () => {
+  //       const requestOptions = {
+  //         method: "GET",
+  //         redirect: "follow",
+  //       };
+
+  //       try {
+  //         setLoading(true);
+  //         let res = await fetch(
+  //           `https://geocode.maps.co/search?q=${search}&api_key=668f77953c443921364690nrf6d0eb9`,
+  //           requestOptions
+  //         );
+  //         res = await res.text();
+  //         setSuggestions(JSON.parse(res ?? [])); // Assuming res is always JSON
+  //         setLoading(false);
+  //       } catch (error) {
+  //         setError(error);
+  //         setLoading(false);
+  //       }
+  //     };
+
+  //     if (search) {
+  //       fetchSuggestions();
+  //     }
+  //   }, []);
+
+  //   return { suggestions, loading, error };
+  // };
+
+  /*function debounce(func, wait) {
     let timeout;
     return function (...args) {
       clearTimeout(timeout);
       timeout = setTimeout(() => func.apply(this, args), wait);
     };
-  }
+  }*/
+  // const {suggestions,loading, error}=useFetchSuggestions(debouncedTextToSearch);
 
-  const debouncedFetchSearchResults = debounce(async () => {
+  /*const debouncedFetchSearchResults = debounce(async () => {
     const result = await fetchSuggestions();
     console.log(result, "result");
     //displaySuggestions(result)
     return result;
-  }, 1000);
+  }, 1000);*/
 
-  useEffect(() => {
-    debouncedFetchSearchResults();
-  }, [textToSearch]);
+  // useEffect(() => {
+  //   fetchSuggestions();
+  // }, [textToSearch]);
 
   /*const updateDynamicLatLon = (value) => {
     console.log(value, "value");
@@ -199,17 +271,17 @@ const LocateNearestHospital = () => {
     alert("Location fetch Suceeded");
   }
 
-  function distanceFromSpecifiedLocation(value, listOfPlaces) {
+  useEffect(()=>{
     getHospitalDatafromDB();
-    var Latitude;
-    var Longitude;
+  },[])
 
-    for (let i = 0; i < listOfPlaces.length; i++) {
-      if (value.target.value == listOfPlaces[i].display_name) {
-        Latitude = listOfPlaces[i].lat;
-        Longitude = listOfPlaces[i].lon;
-      }
-    }
+  useEffect(()=>{
+    if(textToSearch==null || textToSearch.length==0)
+    setSearchList([]);
+  },[textToSearch])
+  function distanceFromSpecifiedLocation(address) {
+    var Latitude = address?.lat;
+    var Longitude = address?.lon;
 
     let minDist = 0;
     let nearestHospital = "";
@@ -254,7 +326,7 @@ const LocateNearestHospital = () => {
   };
   const handleLocation = (event) => {
     setLocationOption(event.target.defaultValue);
-    console.log("radio",event.target.defaultValue);
+    console.log("radio", event.target.defaultValue);
   };
 
   const findHospital = () => {
@@ -299,27 +371,29 @@ const LocateNearestHospital = () => {
             defaultValue="currentLocation"
             name="radio-buttons-group"
             onChange={handleLocation}
+            
           >
             <FormControlLabel
               value="currentLocation"
               //onClick={setLocationOption("currentLocation")}
               control={<Radio />}
               label="My Current Location"
+              disabled={!dept}
             />
             <FormControlLabel
               value="enteredLocation"
               //onClick={setLocationOption("enteredLocation")}
               control={<Radio />}
               label="Entered Location"
+              disabled={!dept}
             />
           </RadioGroup>
         </FormControl>
 
         <Button
-        disabled={locationOption != "currentLocation"}
+          disabled={locationOption != "currentLocation"}
           onClick={findHospital}
           className="button"
-          
         >
           {!currentLocationAvbl
             ? "Find my location"
@@ -339,35 +413,30 @@ const LocateNearestHospital = () => {
         <Autocomplete
           className="autocomplete"
           disablePortal
+          
           disabled={locationOption === "currentLocation"}
           id="combo-box-demo"
-          options={searchList.map((item) => item.display_name)}
+          getOptionLabel={(option) => option.display_name}
+          options={searchList}
           sx={{ width: 300 }}
-          
+          value={formAddress}
           renderInput={(params) => (
             <TextField
-              onChange={(e) => setTextToSearch(e.target.value)}
+              onChange={(e) => {
+                setTextToSearch(e.target.value);
+              }}
               {...params}
               label="Enter Address"
             />
           )}
-          onBlur={(e) => {
-            let listOfPlaces = searchList;
-            distanceFromSpecifiedLocation(e, listOfPlaces);
+          onChange={(e,value) => {
+            setFormAddress(value);
+            distanceFromSpecifiedLocation(value);
+            //findHospital();
           }}
         />
 
-        <Button
-          className="button"
-          sx={{
-            cursor: textToSearch
-              ? "allowed!important"
-              : "not-allowed!important",
-            height: "30px",
-          }}
-        >
-          Find Nearest Hospital from Entered Location
-        </Button>
+        
       </div>
     </div>
   );

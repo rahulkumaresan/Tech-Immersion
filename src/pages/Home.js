@@ -20,15 +20,17 @@ const [username, setUsername] = useState("");
     navigate("/createAcc");
   }
   function gotoCrudPage(){
-    navigate("/crud");
+    ValidateUser();
+    //navigate("/crud");
   }
 
-  function ValidateUser(userName="tesuser1",password="test123"){
+  function ValidateUser(){
+    console.log(username,password);
     const myHeaders = new Headers();
 myHeaders.append("Content-Type", "application/json");
 
 const raw = JSON.stringify({
-  "Username": userName,
+  "Username": username,
   "Password": password
 
 });
@@ -42,7 +44,12 @@ const requestOptions = {
 
 fetch("http://localhost:7071/api/validateUser", requestOptions)
   .then((response) => response.text())
-  .then((result) => alert(result))
+  .then((result) => {alert(result);
+    if(!(result.includes("Invalid username or password"))){
+    navigate("/crud");
+    }
+    
+  })
   .catch((error) => console.error(error));
   }
 

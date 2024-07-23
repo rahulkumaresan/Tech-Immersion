@@ -15,15 +15,13 @@ import {
   Card
 } from "@mui/material";
 
-const LocateNearestHospital = () => {
+const LocateNearestHospitalMyLoc = () => {
   console.log("asdasd");
   const [hospitalData, setHospitalData] = useState();
 
   const navigate = useNavigate();
 
-  function gotoHome() {
-    navigate("/home");
-  }
+  
   const [dept, setDept] = useState("");
   const [nearestHospital, setNearestHospital] = useState("");
   const [distanceHospital, setDistanceHospital] = useState("");
@@ -34,36 +32,7 @@ const LocateNearestHospital = () => {
   const [locationOption, setLocationOption] = useState("currentLocation");
   const [formAddress,setFormAddress] = useState({"display_name":""});
   const [showResult,setShowResult]=useState(true)  ;
-  // getHospitalDatafromDB();
 
-  //using the ‘Haversine’ formula.
-
-  /*const arr = [
-    ["AIIMS Delhi", 28.5672, 77.21, "ortho,dental,gp,opthalmology,cardio"],
-    ["Apollo Hyd", 17.4276, 78.4134, "ortho,dental,gp,cardio"],
-    ["Medicover Madhapur", 17.4469, 78.38, "gp"],
-    ["AIG Hospital Hyderabad", 17.443183, 78.366294, "ortho,cardio"],
-    ["PACE Hospitals HitechCity", 17.446773, 78.384252, "ortho,cardio"],
-    ["KIMS Kondapur", 17.466881, 78.368515, "dental,gp,cardio"],
-    [
-      "KIMS Bhubaneswar",
-      20.3539,
-      85.8136,
-      "ortho,dental,gp,opthalmology,cardio",
-    ],
-    [
-      "Apollo Bhubaneswar",
-      20.305592,
-      85.831093,
-      "ortho,dental,gp,opthalmology,cardio",
-    ],
-    [
-      "AIIMS BHubaneswar",
-      20.2318,
-      85.775,
-      "ortho,dental,gp,opthalmology,cardio",
-    ],
-  ];*/
 
   function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
     var R = 6371; // Radius of the earth in km
@@ -117,7 +86,7 @@ const LocateNearestHospital = () => {
     // Replace this URL with the URL of your API and adjust query parameter if needed
     try {
       let res = await fetch(
-        `https://geocode.maps.co/search?q=${textToSearch}&api_key=668f77953c443921364690nrf6d0eb9`,
+        `https://geocode.maps.co/search?q=${textToSearch}&api_key=<key>`,
         requestOptions
       );
       res = await res.text();
@@ -132,7 +101,7 @@ const LocateNearestHospital = () => {
   //TO DO
   function FindAddress(latitude, longitude) {
     fetch(
-      `https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}&api_key=668f77953c443921364690nrf6d0eb9`
+      `https://geocode.maps.co/reverse?lat=${latitude}&lon=${longitude}&api_key=<key>`
     )
       .then((res) => {
         console.log(res, "dynamicAddress");
@@ -257,18 +226,11 @@ const LocateNearestHospital = () => {
 
   return (
     <div className="container">
-      <div className="top-right-buttons">
-        <Button onClick={() => navigate("/createAcc")} className="button">
-          Create Admin Account
-        </Button>
-        <Button onClick={() => navigate("/")} className="button">
-          Admin Login
-        </Button>
-      </div>
+      
       <div className="card">
-        <h2>Locate Nearest Hospital</h2>
+        <h2 >Locate Nearest Hospital</h2>
 
-        <FormControl variant="outlined" className="form-control">
+        <FormControl variant="outlined" className="form-control" sx={{ m: 2 }}>
           <InputLabel>Select Department</InputLabel>
           <Select
             className="select"
@@ -360,7 +322,7 @@ const LocateNearestHospital = () => {
           {"Find Nearest Hospital from entered location"}
         </Button>
 
-        <Card>
+        <Card sx={{ m: 2 }}>
 
 {nearestHospital && showResult && (
   <div style={{padding:'10px'}}>
@@ -379,4 +341,4 @@ const LocateNearestHospital = () => {
   );
 };
 
-export default LocateNearestHospital;
+export default LocateNearestHospitalMyLoc;

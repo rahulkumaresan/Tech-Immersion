@@ -254,19 +254,19 @@ const LocateNearestHospitalMyLoc = () => {
             defaultValue="currentLocation"
             name="radio-buttons-group"
             onChange={handleLocation}
+            
             row
           >
             <FormControlLabel
               value="currentLocation"
               control={<Radio />}
-              label="My Current Location"
+              label={<span style={{ fontSize: "14px" }}>My Current Location</span>}
               disabled={!dept}
-              sx={{ fontSize: 14, fontWeight: "300 !important" }}
             />
             <FormControlLabel
               value="enteredLocation"
               control={<Radio />}
-              label="Entered Location"
+              label={<span style={{ fontSize: "14px" }}>Entered Location</span>}
               disabled={!dept}
             />
           </RadioGroup>

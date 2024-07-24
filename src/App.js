@@ -12,31 +12,12 @@ function App() {
  
   return (
     <div className="App">
-      <header className="App-header">
+      
         <BrowserRouter>
         <Routes>
         <Route index element={<LocateNearestHospitalMyLoc/>}/>
-
-          <Route path="/locate" element={<LocateNearestHospital/>}/>
-          <Route path="/adminLogin" element={<AdminLogin/>}/>
-          <Route path="/crud" element={<Crud/>}/>
-          <Route path="/home" element={<Home/>}/>
-          <Route path="/createAcc" element={<CreateAccount/>}/>
-          <Route path="/locateNearMe" element={<LocateNearestHospitalMyLoc/>}/>
-
-
-          
-
-
-          
-
         </Routes>
-        
-        
         </BrowserRouter>
-       
-      
-      </header>
     </div>
   );
 }

@@ -14,6 +14,13 @@ import {
   Card,
 } from "@mui/material";
 import { FUNCTION_APP_URL, GEOCODE_API_KEY } from "../index.js";
+import Table from '@mui/material/Table';
+import TableBody from '@mui/material/TableBody';
+import TableCell from '@mui/material/TableCell';
+import TableContainer from '@mui/material/TableContainer';
+import TableHead from '@mui/material/TableHead';
+import TableRow from '@mui/material/TableRow';
+import Paper from '@mui/material/Paper';
 
 const LocateNearestHospitalMyLoc = () => {
   const [hospitalData, setHospitalData] = useState();
@@ -28,6 +35,7 @@ const LocateNearestHospitalMyLoc = () => {
   const [locationOption, setLocationOption] = useState("currentLocation");
   const [formAddress, setFormAddress] = useState({ display_name: "" });
   const [showResult, setShowResult] = useState(true);
+  const [validHospital, setValidHospital]=useState([]);
 
   //This function takes latitude and Longitude of 2 places as params, and returns the straight-line distance between the 2 places.
   function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -108,7 +116,10 @@ const LocateNearestHospitalMyLoc = () => {
 
   function displayResults() {
     setShowResult(true);
+
   }
+
+  
 
   /*
   This functions achieves following things 
@@ -136,6 +147,14 @@ const LocateNearestHospitalMyLoc = () => {
         hospitalDataList[i]["Latitude"],
         hospitalDataList[i]["Longitude"]
       );
+      //populateTableData(dist);
+      if(hospitalDataList[i].SpecialitiesAvailable.includes(dept)){
+        let validHospTemp=validHospital;
+        hospitalDataList[i].distance=dist;
+        validHospTemp.push(hospitalDataList[i]);
+        setValidHospital(validHospTemp);
+        console.log(validHospital,"validHospital");
+      }
       if (
         (minDist === 0 || dist < minDist) &&
         hospitalDataList[i].SpecialitiesAvailable.includes(dept)
@@ -222,7 +241,7 @@ const LocateNearestHospitalMyLoc = () => {
             value={dept}
             onChange={handleDept}
             label="Select Department"
-            font-size="large"
+            
           >
             <MenuItem value="ortho">Orthopaedics</MenuItem>
             <MenuItem value="cardio">Cardiology</MenuItem>
@@ -309,14 +328,42 @@ const LocateNearestHospitalMyLoc = () => {
 
         <Card>
           {nearestHospital && showResult && (
-            <div style={{ padding: "5px" }}>
-              <p>
+            <div style={{ padding: "5px", textAlign: "center"}}>
+              <p style={{ fontSize: "14px" }}>
                 The nearest Hospital is<b> {nearestHospital},</b>{" "}
                 {Math.round(distanceHospital)} KM away. Hospital Address:{" "}
                 {address?.address?.neighbourhood}, {address?.address?.postcode}.
               </p>
+              Other hospitals of the same department have been mentioned below:
+              
             </div>
           )}
+
+<TableContainer component={Paper} >
+      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <TableHead sx={{ fontSize: 34, fontWeight: 300, color: "black" }}>
+          <TableRow >
+            <TableCell sx={{ fontSize: 14,color: "black" }}>Hospital Name</TableCell>
+            <TableCell sx={{ fontSize: 14,color: "black" }} >Distance</TableCell>
+            <TableCell sx={{ fontSize: 14,color: "black" }} >Address</TableCell>
+          </TableRow>
+        </TableHead>
+
+        <TableBody>
+          {validHospital.map((row) => (
+            <TableRow
+              key={row.name}
+              
+            >
+              <TableCell component="th" scope="row">{row.Name}</TableCell>
+              <TableCell >{Math.round(row.distance)} Km</TableCell>
+              <TableCell >{row.Address}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+        
+      </Table>
+    </TableContainer>
         </Card>
       </div>
     </div>
